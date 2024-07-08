@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?
+  mobile    String?   @unique
+  firstName String
+  lastName  String?
+  role      userRole  @default(buyer)
+  ratting   Float?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  verified  Boolean   @default(false)
+  Address   Address[]
+  Buyer     Buyer[]
+  Order     Order[]
+  Product   Product[]
+  Message   Message[]
+}
+
+enum userRole {
+  farmer
+  buyer
+}
+
+model Buyer {
+  id          Int     @id
+  user        User    @relation(fields: [id], references: [id])
+  companyName String?
+}
+
+model Product {
+  id                Int       @id @default(autoincrement())
+  name              String
+  description       String?
+  price             Int
+  salePrice         Int
+  quantityAvailable Int
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  Order             Order[]
+  Image             Image[]
+  Message           Message[]
+}
+
+model Image {
+  id        Int     @id @default(autoincrement())
+  sourceId  String  @default("1")
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  imageUrl  String
+}
+
+model Address {
+  id           Int     @id @default(autoincrement())
+  userId       Int
+  user         User    @relation(fields: [userId], references: [id])
+  pincode      String
+  locality     String
+  address      String
+  landmark     String?
+  city         String
+  state        String
+  alternateMob String?
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  bidPrice  Int
+  message   String?
+  status    String   @default("pending")
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  message   String
+  senderId  Int
+  user      User    @relation(fields: [senderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
